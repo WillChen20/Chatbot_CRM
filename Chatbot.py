@@ -11,6 +11,7 @@ st.set_page_config(
 
 st.title("🤖 Suporte da CRM - CDL")
 st.write("Bem-vindo! Como posso ajudar você com o nosso CRM hoje?")
+st.write("\n Qualquer dúvida ou problema, pode procurar o Chen para atualizar respostas")
 
 # 2. Puxando a chave secreta e configurando os chaves
 CHAVE_API = st.secrets["GEMINI_API_KEY"]
