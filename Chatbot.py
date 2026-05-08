@@ -105,8 +105,8 @@ def carregar_base_conhecimento():
 conhecimento_empresa = carregar_base_conhecimento()
 
 # 5. Debug Visual (Para garantir que ele leu os textos):
-with st.expander("🛠️ Debug - Clique para ver a Base de Conhecimento lida"):
-    st.write(conhecimento_empresa)
+#with st.expander("🛠️ Debug - Clique para ver a Base de Conhecimento lida"):
+    #st.write(conhecimento_empresa)
 
 # 6. Inicializa o histórico de mensagens na memória do Streamlit
 if "messages" not in st.session_state:
