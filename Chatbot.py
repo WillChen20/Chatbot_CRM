@@ -16,7 +16,7 @@ st.write("\n Qualquer dúvida ou problema, pode procurar o Chen para atualizar r
 # 2. Puxando a chave secreta e configurando os chaves
 CHAVE_API = st.secrets["GEMINI_API_KEY"]
 genai.configure(api_key=CHAVE_API)
-model = genai.GenerativeModel('gemini-2.0-flash')
+model = genai.GenerativeModel('gemini-2.5-flash')
 NOTION_TOKEN = st.secrets["NOTION_TOKEN"]
 notion = Client(auth=NOTION_TOKEN)
 NOTION_DB_ID = st.secrets["NOTION_DATABASE_ID"]
