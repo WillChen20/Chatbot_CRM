@@ -119,7 +119,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # 8. Cria a caixa de texto para o usuário digitar
-if prompt := st.chat_input("Digite sua dúvida aqui..."):
+if prompt := st.chat_input("Digite a sua dúvida sobre o CRM..."):
     
     # Aparece a mensagem do usuário na tela e salva no histórico
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -129,27 +129,49 @@ if prompt := st.chat_input("Digite sua dúvida aqui..."):
     # RECURSO NOVO: Criando o "Resumo" da conversa para o modelo entender o contexto (pode ser útil se a conversa ficar longa)
     historico = ""
     # Pega as últimas 6 mensagens trocadas, ignorando a que o usuário acabou de digitar
-    for msg in st.session_state.messages[-7:-1]:  # Pega as últimas 6 mensagens (pode ajustar esse número)
+    for msg in st.session_state.messages[-3:-1]:  # Pega as últimas 6 mensagens (pode ajustar esse número)
         quem = "Usuário" if msg["role"] == "user" else "Assistente"
         historico += f"{quem}: {msg['content']}"
-
+        
+    # --- O NOVO FILTRO INTELIGENTE ---
+    modulos_separados = conhecimento_empresa.split("### MÓDULO:")
+    contexto_enxuto = ""
+    faq_texto = ""
+    
+    # 1. Garante que o FAQ vai SEMPRE para o célebro do bot
+    for modulo in modulos_separados:
+        if "FAQ" in modulo.upper():
+            faq_texto = f"\n### MÓDULO:{modulo}"
+            
+    # 2. Procura palavras-chave apenas nos outros módulos
+    palavras_chave = [p.lower() for p in prompt.split() if len(p) > 3]  # Pega palavras maiores que 3 letras
+    for modulo in modulos_separados:
+        if "FAQ" not in modulo.upper(): # Ignora o FAQ nessa parte
+            if any(palavra in modulo.lower() for palavra in palavras_chave):
+                contexto_enxuto += f"\n### MÓDULO:{modulo}"
+                
+    # 3. Junta o FAQ com qualquer módulo que tenha palavra-chave + o histórico da conversa
+    contexto_final = faq_texto + contexto_enxuto
+    
+    
     # Prepara a instrução para o Gemini
     # Aqui é onde "obrigamos" ele a usar a base de conhecimento do Notion para responder
     instrucao_secreta = f"""
     Você é o Chen, o assistente virtual amigável e proativo de suporte do CRM da CDL.
 
     SEU PAPEL:
-    - Leia as informações da BASE DE CONHECIMENTO abaixo.
-    - Você NÃO deve apenas copiar e colar o texto. Aja de forma natural, explique o passo a passo de forma conversacional e amigável.
-    - Se o usuário fizer uma pergunta usando palavras diferentes, use sua capacidade de dedução para entender o que ele quer e conecte com as regras do CRM. Seja inteligente.
-
+    - Responda usando a BASE DE CONHECIMENTO abaixo.
+    - Seja natural e conversacional. Explique como se estivesse a falar com um colega de trabalho.
+    - NUNCA diga frases robóticas como "De acordo com a base de conhecimento".
+    - Use a sua capacidade de dedução: se o utilizador perguntar por "alterar", "mudar" ou "esqueci", faça a ligação com as regras de "recuperar" na tabela FAQ.
+    
     REGRA DE EXCEÇÃO:
     Se a pergunta for sobre um assunto que REALMENTE não existe de forma alguma na base, diga educadamente que ainda não tem essa informação no manual e ofereça os vídeos:
     - https://www.youtube.com/playlist?list=PLzj5Yw3bh5tWOgrbjmGBPGtGC88oMYZ8l
     - https://www.youtube.com/playlist?list=PLzj5Yw3bh5tWe6I7KCn6pcLOQ1-LKwtIv
 
     BASE DE CONHECIMENTO:
-    {conhecimento_empresa}
+    {contexto_final}
 
     HISTÓRICO:
     {historico}
